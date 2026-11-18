@@ -1,8 +1,8 @@
-#ifndef SOFT_I2C_H
-#define SOFT_I2C_H
+#ifndef TICK_H
+#define TICK_H
 
 #include "main.h"
 
-
+void Tick_Init(void);
 
 #endif

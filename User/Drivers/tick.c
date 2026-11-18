@@ -16,6 +16,7 @@ void Tick_Init(void)
     {
         Error_Handler();
     }
+    HAL_TIM_Base_Start_IT(&htim3); /* 启动定时器中断 */
 }
 
 /* 初始化定时器 */
@@ -29,7 +30,7 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim)
     }
 }
 
-HAL_TIM_Base_Start_IT(&htim3); /* 启动定时器中断 */
+
 
 /* 定时器中断服务函数 */
 void TIM3_IRQHandler(void)
@@ -42,8 +43,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if (htim->Instance == TIM3)
     {
-        s_ms++;                        /* 对应你工程 TIM3_IRQHandler 里的 s_ms++ */
-        s_flag_1ms = 1U;
-        /* 25ms 分频逻辑照搬 */
+
     }
 }
