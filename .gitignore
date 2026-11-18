@@ -1,0 +1,15 @@
+﻿*.o
+*.obj
+*.crf
+*.d
+*.exe
+*.hex
+*.bin
+*.map
+*.lst
+*.axf
+*.elf
+*.uvopt*
+*.uvguix*
+.vscode/
+Thumbs.db
