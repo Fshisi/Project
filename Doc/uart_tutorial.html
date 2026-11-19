@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STM32F103 HAL 串口模板教程 · TC300PGS</title>
+<style>
+  :root {
+    --bg: #f6f7fa;
+    --card: #ffffff;
+    --text: #2a2d38;
+    --muted: #6b7280;
+    --accent: #185fa5;
+    --accent-soft: #e6f1fb;
+    --border: #e3e6ec;
+    --code-bg: #f6f8fa;
+    --kw: #cf222e;
+    --com: #6e7781;
+    --str: #0a3069;
+    --pp: #8250df;
+    --api: #0550ae;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 32px 24px 64px; }
+  header.hero {
+    background: linear-gradient(135deg, #185fa5 0%, #1e7ac2 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 30px 34px;
+    margin-bottom: 28px;
+  }
+  header.hero h1 { margin: 0 0 8px; font-size: 24px; font-weight: 600; letter-spacing: .5px; }
+  header.hero p { margin: 0; opacity: .92; font-size: 13.5px; }
+  header.hero .meta { margin-top: 12px; font-size: 12.5px; opacity: .8; }
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 22px;
+    margin-bottom: 30px;
+    font-size: 13.5px;
+  }
+  nav.toc b { color: var(--accent); }
+  nav.toc a { color: var(--text); text-decoration: none; margin-right: 14px; white-space: nowrap; }
+  nav.toc a:hover { color: var(--accent); text-decoration: underline; }
+  section.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 26px 30px;
+    margin-bottom: 26px;
+  }
+  h2 {
+    font-size: 19px;
+    color: var(--accent);
+    margin: 0 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--accent-soft);
+    font-weight: 600;
+  }
+  h2 .no { color: #9db8d2; margin-right: 8px; font-weight: 500; }
+  h3 { font-size: 15.5px; margin: 20px 0 8px; color: #1c3d5e; }
+  p { margin: 8px 0; }
+  ul, ol { margin: 8px 0; padding-left: 24px; }
+  li { margin: 5px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 13.5px; }
+  th, td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--accent-soft); color: #0c447c; font-weight: 600; }
+  tr:nth-child(even) td { background: #fafbfc; }
+  code.inline {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+    color: #0f3d66;
+  }
+  .codebox { position: relative; margin: 14px 0; }
+  pre.code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    margin: 0;
+    color: var(--text);
+  }
+  .copybtn {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 3px 10px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .copybtn:hover { color: var(--accent); border-color: var(--accent); }
+  .c-kw { color: var(--kw); font-weight: 500; }
+  .c-com { color: var(--com); font-style: italic; }
+  .c-str { color: var(--str); }
+  .c-pp { color: var(--pp); }
+  .c-api { color: var(--api); }
+  .figure { text-align: center; margin: 18px 0; }
+  .figure svg { max-width: 100%; height: auto; }
+  .note {
+    background: #fff8e6;
+    border-left: 4px solid #d9a300;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 16px;
+    margin: 14px 0;
+    font-size: 13.5px;
+  }
+  .warn {
+    background: #fdecea;
+    border-left: 4px solid #c0392b;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 16px;
+    margin: 14px 0;
+    font-size: 13.5px;
+  }
+  .tip {
+    background: #edf7ed;
+    border-left: 4px solid #2e7d32;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 16px;
+    margin: 14px 0;
+    font-size: 13.5px;
+  }
+  footer { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 30px; }
+  @media print {
+    body { background: #fff; }
+    section.card, nav.toc { border: none; padding: 10px 0; }
+    .copybtn { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>STM32F103 HAL 串口模板教程</h1>
+  <p>阻塞发送 + 中断发送 + RXNE 逐字节接收（环形缓冲）+ IDLE 空闲判帧 —— 一套可直接抄走的自包含模板</p>
+  <div class="meta">适用工程：TC300PGS（STM32F103CB · HSI×PLL = SYSCLK 64MHz · USART1 挂 APB2/PCLK2 = 64MHz）· HAL 库 · Keil AC5 · 整理自 2026-11-18 对话教程</div>
+</header>
+
+<nav class="toc">
+  <b>目录：</b>
+  <a href="#s1">1 设计目标</a>
+  <a href="#s2">2 帧结构</a>
+  <a href="#s3">3 波特率</a>
+  <a href="#s4">4 HAL 五件套</a>
+  <a href="#s5">5 uart.h</a>
+  <a href="#s6">6 uart.c</a>
+  <a href="#s7">7 接收链路</a>
+  <a href="#s8">8 四个关键机制</a>
+  <a href="#s9">9 主循环用法</a>
+  <a href="#s10">10 接线三步</a>
+  <a href="#s11">11 坑清单</a>
+  <a href="#s12">12 测试</a>
+</nav>
+
+<section class="card" id="s1">
+  <h2><span class="no">1</span>设计目标</h2>
+  <ul>
+    <li><b>自包含</b>：只依赖 <code class="inline">main.h</code>（HAL/CMSIS）和 <code class="inline">stdio.h</code>，不依赖 CubeMX、不依赖工程其它文件。</li>
+    <li><b>宏适配区</b>：换串口号 / 波特率 / 引脚，只改 <code class="inline">uart.c</code> 顶部一组宏，函数体不碰。</li>
+    <li><b>发送双通道</b>：阻塞版 <code class="inline">SendStr</code>（printf 走这条路）+ 中断版 <code class="inline">SendStr_IT</code>。</li>
+    <li><b>接收双中断</b>：RXNE 逐字节收进环形缓冲；IDLE 空闲中断判定"不定长一包结束"，主循环批量消费。</li>
+    <li><b>错误自恢复</b>：ORE 等接收错误后自动重挂接收链，不会"永久失聪"。</li>
+  </ul>
+  <div class="note">本文档整理的是<b>教程模板原版代码</b>。工程内 <code class="inline">User/Drivers/uart.c</code> 是在此基础上的改版，两者若有出入，以工程实际文件为准（当前工程版已知差异见第 12 节末尾）。</div>
+</section>
+
+<section class="card" id="s2">
+  <h2><span class="no">2</span>UART 帧结构：一个字节是怎么上线的</h2>
+  <p>串口没有时钟线，双方事先约好速度（115200）和格式（8-N-1）靠约定对齐。空闲时线保持高电平；起始位用一个低电平"喊话"，随后 8 个数据位按<b>低位在前</b>依次发，最后停止位拉高收尾。下图是发送 <code class="inline">0x55</code>（二进制 01010101）的波形——0/1 交替翻转，最直观：</p>
+  <div class="figure">
+  <svg viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg" role="img">
+    <title>UART 8-N-1 帧波形</title>
+    <text x="340" y="26" text-anchor="middle" font-size="14" font-weight="600" fill="#26215C">8-N-1 帧结构：发送 0x55（01010101，低位在前）</text>
+    <rect x="90" y="55" width="50" height="72" fill="#FDEBEA"/>
+    <rect x="540" y="55" width="50" height="72" fill="#EAF6EA"/>
+    <path d="M50,70 L90,70 L90,115 L140,115 L140,70 L190,70 L190,115 L240,115 L240,70 L290,70 L290,115 L340,115 L340,70 L390,70 L390,115 L440,115 L440,70 L490,70 L490,115 L540,115 L540,70 L630,70" fill="none" stroke="#26215C" stroke-width="2" stroke-linejoin="round"/>
+    <g font-size="11" fill="#5F5E5A" text-anchor="middle">
+      <text x="70" y="140">空闲</text>
+      <text x="115" y="140">起始位</text>
+      <text x="165" y="140">D0 = 1</text>
+      <text x="215" y="140">D1 = 0</text>
+      <text x="265" y="140">D2 = 1</text>
+      <text x="315" y="140">D3 = 0</text>
+      <text x="365" y="140">D4 = 1</text>
+      <text x="415" y="140">D5 = 0</text>
+      <text x="465" y="140">D6 = 1</text>
+      <text x="515" y="140">D7 = 0</text>
+      <text x="565" y="140">停止位</text>
+      <text x="605" y="140">空闲</text>
+    </g>
+    <text x="340" y="172" text-anchor="middle" font-size="12" fill="#5F5E5A">起始位 = 低电平喊话；数据位低位在前；停止位拉高收尾；无校验位（N）</text>
+    <text x="340" y="190" text-anchor="middle" font-size="12" fill="#5F5E5A">每位持续时间 = 1/115200 ≈ 8.68 µs（波特率决定双方共同的"节拍器"）</text>
+  </svg>
+  </div>
+</section>
+
+<section class="card" id="s3">
+  <h2><span class="no">3</span>波特率怎么算（用本工程真实时钟）</h2>
+  <p>USART1 挂在 <b>APB2</b> 上（注意和 TIM3 的 APB1 不同）。本工程时钟链：SYSCLK 64MHz → AHB ÷1 → APB2 ÷1 → <b>PCLK2 = 64MHz</b>，这就是 USART1 的计时钟。硬件要求分频值 <code class="inline">USARTDIV = fck ÷ (16 × 波特率)</code>：</p>
+  <div class="codebox"><pre class="code">USARTDIV = 64MHz ÷ (16 × 115200) = 34.72
+整数部分 34，小数 0.72 × 16 ≈ 11  →  BRR = 34×16 + 11 = 555
+实际波特率 = 64MHz ÷ (16 × (34 + 11/16)) ≈ 115207，误差 +0.006% ✓</pre></div>
+  <p>串口允许 ±2% 误差，0.006% 非常稳。好消息：这些全是 <code class="inline">HAL_UART_Init</code> <b>内部自动算的</b>，你只填 <code class="inline">BaudRate = 115200U</code>。HAL 自动从 RCC 取 PCLK2，时钟配置改了它跟着变，不会算错。</p>
+</section>
+
+<section class="card" id="s4">
+  <h2><span class="no">4</span>学 HAL 外设 = 记住"五件套"</h2>
+  <p>和 tick.c（TIM3）完全同构，只是换了外设。学会这一套，SPI、ADC、CAN 都是照葫芦画瓢：</p>
+  <table>
+    <tr><th>tick.c（TIM3）</th><th>uart.c（USART1）</th><th>职责</th></tr>
+    <tr><td><code class="inline">htim3</code> 句柄</td><td><code class="inline">huart1</code> 句柄</td><td>全局唯一，中断/回调都通过它访问</td></tr>
+    <tr><td><code class="inline">Tick_Init()</code> 填结构体</td><td><code class="inline">UART1_Init()</code> 填结构体</td><td>填 <code class="inline">Init</code> 子结构体 → 调 <code class="inline">HAL_xxx_Init</code></td></tr>
+    <tr><td><code class="inline">HAL_TIM_Base_MspInit</code></td><td><code class="inline">HAL_UART_MspInit</code></td><td>自动回调：时钟使能 + 引脚（+开中断时配 NVIC）</td></tr>
+    <tr><td><code class="inline">TIM3_IRQHandler</code></td><td><code class="inline">USART1_IRQHandler</code></td><td>只有开中断才需要；覆盖启动文件弱符号</td></tr>
+    <tr><td><code class="inline">HAL_TIM_PeriodElapsedCallback</code></td><td><code class="inline">HAL_UART_RxCpltCallback</code> / <code class="inline">TxCpltCallback</code></td><td>HAL 干完活通知你，业务写这里</td></tr>
+  </table>
+  <p>Init 流程都一样：<code class="inline">HAL_UART_Init</code> 内部先回调你的 MspInit（时钟/引脚就位），再写 USART 寄存器（含自动算 BRR）。发送方向再加一环：printf → fputc（重定向）→ HAL_UART_Transmit → 引脚。</p>
+  <div class="tip"><b>为什么阻塞发送是调试串口的正确默认值</b>：两种发送方式总耗时一样（115200 下每字节 8.68µs），中断发送省的只是 CPU 等待，代价是缓冲区生命周期、重入、竞争三件套。printf 链路逐字符同步出口，和 IT 发送天然不兼容。出现"波特率上 460800+ 或单次发几 KB"的证据再升级，不要预防性升级。</div>
+</section>
+
+<section class="card" id="s5">
+  <h2><span class="no">5</span>uart.h 完整代码</h2>
+  <div class="codebox">
+    <button class="copybtn" data-src="src-h">复制代码</button>
+    <pre class="code" id="view-h"></pre>
+  </div>
+</section>
+
+<section class="card" id="s6">
+  <h2><span class="no">6</span>uart.c 完整代码</h2>
+  <p>顶部就是<b>工程适配区</b>：换串口号要成对改 <code class="inline">UART_INSTANCE</code> / <code class="inline">UART_IRQn</code> / <code class="inline">UART_CLK_ENABLE()</code> 三个宏（USART2/3 挂 APB1，时钟源变 PCLK1=32MHz，但波特率照旧 HAL 自动算）；换引脚只改 4 个 PORT/PIN 宏，TX/RX 甚至可以不同端口。环形缓冲的回绕用<b>"先加后绕"</b>写法（<code class="inline">next</code> 到底就清 0，不用 <code class="inline">%</code> 运算符），缓冲大小可取任意值、不要求 2 的幂；判满约定不变：前进一格撞上 tail 即满（牺牲 1 格区分空/满）。</p>
+  <div class="codebox">
+    <button class="copybtn" data-src="src-c">复制代码</button>
+    <pre class="code" id="view-c"></pre>
+  </div>
+</section>
+
+<section class="card" id="s7">
+  <h2><span class="no">7</span>接收链路：两条中断通路汇合到主循环</h2>
+  <div class="figure">
+  <svg viewBox="0 0 680 210" xmlns="http://www.w3.org/2000/svg" role="img">
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round"/>
+      </marker>
+    </defs>
+    <title>接收链路数据流</title>
+    <text x="340" y="24" text-anchor="middle" font-size="14" font-weight="600" fill="#26215C">接收链路：RXNE 管字节，IDLE 管包边界</text>
+    <rect x="30" y="42" width="150" height="52" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+    <text x="105" y="64" text-anchor="middle" font-size="12.5" font-weight="500" fill="#0C447C">RXNE 中断</text>
+    <text x="105" y="82" text-anchor="middle" font-size="11" fill="#0C447C">每收到 1 字节触发</text>
+    <line x1="180" y1="68" x2="208" y2="68" stroke="#185FA5" stroke-width="1.5" marker-end="url(#arr)"/>
+    <rect x="210" y="42" width="180" height="52" rx="8" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+    <text x="300" y="64" text-anchor="middle" font-size="12.5" font-weight="500" fill="#0C447C">HAL_UART_IRQHandler</text>
+    <text x="300" y="82" text-anchor="middle" font-size="11" fill="#0C447C">HAL 收走 DR 里的字节</text>
+    <line x1="390" y1="68" x2="418" y2="68" stroke="#185FA5" stroke-width="1.5" marker-end="url(#arr)"/>
+    <rect x="420" y="42" width="230" height="52" rx="8" fill="#C0DD97" stroke="#3B6D11" stroke-width="0.5"/>
+    <text x="535" y="64" text-anchor="middle" font-size="12.5" font-weight="500" fill="#27500A">RxCpltCallback</text>
+    <text x="535" y="82" text-anchor="middle" font-size="11" fill="#27500A">入环形缓冲 + 续挂下一字节</text>
+    <rect x="30" y="126" width="150" height="52" rx="8" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+    <text x="105" y="148" text-anchor="middle" font-size="12.5" font-weight="500" fill="#633806">IDLE 中断</text>
+    <text x="105" y="166" text-anchor="middle" font-size="11" fill="#633806">线上空闲超 1 字节时间</text>
+    <line x1="180" y1="152" x2="208" y2="152" stroke="#854F0B" stroke-width="1.5" marker-end="url(#arr)"/>
+    <rect x="210" y="126" width="180" height="52" rx="8" fill="#FAEEDA" stroke="#854F0B" stroke-width="0.5"/>
+    <text x="300" y="148" text-anchor="middle" font-size="12.5" font-weight="500" fill="#633806">IRQHandler 后半段</text>
+    <text x="300" y="166" text-anchor="middle" font-size="11" fill="#633806">清 IDLE 标志 + 置帧标志</text>
+    <line x1="390" y1="152" x2="418" y2="152" stroke="#854F0B" stroke-width="1.5" marker-end="url(#arr)"/>
+    <rect x="420" y="126" width="230" height="52" rx="8" fill="#C0DD97" stroke="#3B6D11" stroke-width="0.5"/>
+    <text x="535" y="148" text-anchor="middle" font-size="12.5" font-weight="500" fill="#27500A">主循环消费</text>
+    <text x="535" y="166" text-anchor="middle" font-size="11" fill="#27500A">FrameReady → ReadRx 逐字节取</text>
+    <line x1="535" y1="94" x2="535" y2="124" stroke="#3B6D11" stroke-width="1.5" marker-end="url(#arr)"/>
+    <text x="340" y="200" text-anchor="middle" font-size="12" fill="#5F5E5A">两条通路在 USART1_IRQHandler 里按固定顺序处理：先 HAL 收字节，再查清 IDLE</text>
+  </svg>
+  </div>
+  <h3>接收链是"预订—回调—续订"模式，全工程挂接只有三处</h3>
+  <table>
+    <tr><th>位置</th><th>角色</th><th>时机</th></tr>
+    <tr><td><code class="inline">UART1_Init</code> 里的 <code class="inline">HAL_UART_Receive_IT(&amp;huart1, &amp;s_rx_byte, 1U)</code></td><td><b>点火</b></td><td>上电一次：登记缓冲指针 + 使能 RXNEIE + 状态置 BUSY_RX。不挂这第一个，RXNE 中断永远不会来</td></tr>
+    <tr><td><code class="inline">HAL_UART_RxCpltCallback</code></td><td><b>续棒</b></td><td>每收 1 字节：入环形缓冲，再 <code class="inline">Receive_IT</code> 挂下一个</td></tr>
+    <tr><td><code class="inline">HAL_UART_ErrorCallback</code></td><td><b>救火</b></td><td>出错（ORE 等）后 HAL 停止续挂，必须手动重挂恢复接收链</td></tr>
+  </table>
+  <p><code class="inline">&amp;s_rx_byte</code> + <code class="inline">1U</code> 的含义：HAL 要求缓冲区活到回调发生（中断是异步的），所以落脚点必须是文件级静态变量，传栈上局部变量的地址是经典 bug；一次预订 1 字节是"不定长接收"最灵活的挂法。</p>
+</section>
+
+<section class="card" id="s8">
+  <h2><span class="no">8</span>四个关键机制（都是实际翻车点）</h2>
+  <ol>
+    <li><b>IDLE 中断 HAL 完全不管。</b>HAL 的 <code class="inline">HAL_UART_IRQHandler</code> 里没有 IDLE 分支——使能（<code class="inline">__HAL_UART_ENABLE_IT(&amp;huart1, UART_IT_IDLE)</code>）和查清都要自己做。IDLE 的含义：<b>收到数据后，线上空闲超过 1 字节时间</b>（115200 下约 87µs）硬件自动置位——它就是"不定长一包结束"检测器。本 HAL 包里 <code class="inline">__HAL_UART_CLEAR_IDLEFLAG</code> 是完整的"读 SR + 读 DR"清除序列（已验证 hal_uart.h 504-510 行）。</li>
+    <li><b>IRQHandler 里的顺序不能反。</b>清 IDLE 的宏要读 DR。如果 IDLE 置位时恰好 RXNE 也挂着（新字节在 DR 里还没被 HAL 收走），先清 IDLE 就会把那个字节<b>偷走</b>——丢数据还打乱 HAL 状态机。固定顺序：<b>先 <code class="inline">HAL_UART_IRQHandler</code>，再查清 IDLE</b>。</li>
+    <li><b>ErrorCallback 不写，接收链会"永久失聪"。</b>发生 ORE 溢出（主循环没来得及消费、对方还在发）等错误后，HAL 会停止续挂单字节接收——不手动恢复，串口从此收不到任何东西。这是 HAL 单字节接收最隐蔽的坑。</li>
+    <li><b>中断/主循环共享的三个变量必须 volatile</b>（<code class="inline">s_rx_head</code>、<code class="inline">s_frame_flag</code>、<code class="inline">s_rx_over</code>）——中断写、主循环读，缺了 volatile 编译器可能优化掉重复读取。</li>
+  </ol>
+</section>
+
+<section class="card" id="s9">
+  <h2><span class="no">9</span>主循环用法</h2>
+  <div class="codebox"><pre class="code" id="view-use"></pre></div>
+  <p>不用帧标志也能收（纯流式）：随时循环调 <code class="inline">UART1_ReadRx</code> 逐字节取即可；<code class="inline">UART1_RxOverflow()</code> 返回累计丢弃数，<b>持续增长 = 256 字节缓冲不够或主循环太慢</b>的信号。</p>
+</section>
+
+<section class="card" id="s10">
+  <h2><span class="no">10</span>接线三步</h2>
+  <ol>
+    <li><code class="inline">main.c</code>：<code class="inline">#include "uart.h"</code>，在 <code class="inline">SystemClock_Config()</code> <b>之后</b>调 <code class="inline">UART1_Init();</code>（BRR 按 64MHz 算，时钟没配好就 Init 波特率会错）。</li>
+    <li>Keil：Drivers 组 <b>Add Existing Files</b> 加 <code class="inline">uart.c</code>（和 tick.c 那次一样）。</li>
+    <li>Options → Target → 勾 <b>Use MicroLIB</b>。这步不做，printf 会进半主机模式（semihosting）卡死或 HardFault——AC5 的经典坑。</li>
+  </ol>
+  <p>硬件接线是<b>交叉</b>的：MCU 的 TX（PA9）接 USB 转串口模块的 RX，反了收不到东西。</p>
+</section>
+
+<section class="card" id="s11">
+  <h2><span class="no">11</span>坑清单</h2>
+  <ol>
+    <li><b>TX/RX 引脚方向不对称</b>：F1 上 TX 必须 <code class="inline">GPIO_MODE_AF_PP</code>（复用推挽），RX 用 <code class="inline">GPIO_MODE_INPUT</code> 浮空。不要套用 F4 的"两个都配 AF"思路——F1 HAL 的输入脚就是普通输入模式。</li>
+    <li><b>阻塞 <code class="inline">HAL_UART_Transmit</code> 的 pData 无 const</b>——和 hw_i2c.c 那次 Keil #167 一模一样的坑，模板里已转好 <code class="inline">(uint8_t *)s</code>。而新版 HAL 的 <code class="inline">Transmit_IT</code> 形参带 const，不用强转。</li>
+    <li><b>中断服务函数里禁用 printf</b>：阻塞 + 非可重入，双重危险。</li>
+    <li><b><code class="inline">USART1_IRQHandler</code> 全工程只能定义一份</b>：uart.c 里定义后，<code class="inline">stm32f1xx_it.c</code> 里不能再出现同名函数（L6200E）。</li>
+    <li><b>SendStr_IT 与 printf/fputc 共用发送状态机</b>：同一时刻只能一路在发，后调的返回 <code class="inline">HAL_BUSY</code>（SendStr_IT 表现为返回 1 丢弃本次）。</li>
+    <li><b>换串口号三件套成对改</b>：<code class="inline">UART_INSTANCE</code> / <code class="inline">UART_IRQn</code> / <code class="inline">UART_CLK_ENABLE()</code>，且 <code class="inline">USART1_IRQHandler</code> 函数名要手动同步改（函数名没法宏化）。</li>
+    <li><b>HSI 精度 ±1%</b>：本工程 HSI+PLL 出 64MHz，对 115200 依然够用（±2% 门限）；换 HSE 后 HAL 自动跟 RCC 走。</li>
+  </ol>
+</section>
+
+<section class="card" id="s12">
+  <h2><span class="no">12</span>测试与验证</h2>
+  <ol>
+    <li>烧录后打开串口助手：<b>115200 · 8 数据位 · 无校验 · 1 停止位</b>（注意：GJB8114 工程的串口是 8O1 奇校验，那是另一个工程的格式，别配混）。</li>
+    <li>主循环加心跳（见第 9 节代码），每 0.5 秒应收到一行 <code class="inline">hello, N ms</code>。</li>
+    <li>串口助手发 <code class="inline">AT+1</code> 加回车（一整串）→ 帧标志触发 → printf 回显收到的字节 → 收发两条链路都通了。</li>
+    <li>进阶：把 <code class="inline">UART1_ReadRx</code> 后面加简单协议解析（如 <code class="inline">AT+</code> 开头的命令字）。</li>
+  </ol>
+  <div class="warn"><b>工程当前版本已知差异（2026-11-19 记录）</b>：工程内 <code class="inline">uart.c</code> 的 <code class="inline">USART1_IRQHandler</code> 里判断的是 <code class="inline">UART_FLAG_RXNE</code>，而置帧标志的本意是 <b>IDLE</b>——RXNE 分支在 HAL 收走字节后通常已为假，帧标志可能永远不会置位，应改为 <code class="inline">__HAL_UART_GET_FLAG(&amp;huart1, UART_FLAG_IDLE)</code>；另外 <code class="inline">uart.h</code> 未声明 <code class="inline">UART_Init(uint16_t)</code> / <code class="inline">UART1_SendStr_IT</code>，调用处会报隐式声明。改不改、怎么改由你决定，模板原版以上文为准。</div>
+</section>
+
+<footer>整理自 2026-11-18 WorkBuddy 对话教程 · TC300PGS / Doc · 本文件可随工程入库</footer>
+
+</div>
+
+<!-- ====== 源码区（由 JS 读取并高亮渲染，raw 文本无需手工转义） ====== -->
+<script type="text/plain" id="src-h">
+#ifndef UART_H
+#define UART_H
+
+#include "main.h"
+
+extern UART_HandleTypeDef huart1;
+
+void UART1_Init(void);                   /* 初始化：波特率/引脚/收发中断全配好 */
+void UART1_SendStr(const char *s);       /* 阻塞发送（printf 走的也是这条路） */
+uint8_t UART1_SendStr_IT(const char *s); /* 中断发送：0=已受理 1=忙或参数错 */
+uint8_t UART1_ReadRx(uint8_t *byte);     /* 取接收字节：0=取到 1=缓冲空 */
+uint8_t UART1_FrameReady(void);          /* 空闲帧标志（读即清）：1=对面发完一包 */
+uint32_t UART1_RxOverflow(void);         /* 缓冲满丢弃计数（主循环消费太慢的信号） */
+
+#endif
+</script>
+
+<script type="text/plain" id="src-c">
+/* ==========================================================================
+ * uart.c - 调试/通信串口（HAL 版，自包含）
+ * 发送：阻塞（SendStr/fputc）+ 中断（SendStr_IT）
+ * 接收：单字节中断接收 -> 环形缓冲；空闲中断(IDLE)判一包结束 -> 主循环消费
+ * 换板/换波特率/换引脚：只改"工程适配区"的宏
+ * ========================================================================== */
+#include "uart.h"
+#include <stdio.h>
+
+/* ==========================================================================
+ * 工程适配区
+ * ========================================================================== */
+#define UART_INSTANCE       USART1                        /* 串口号 */
+#define UART_IRQn           USART1_IRQn                   /* 与串口号配套的中断号 */
+#define UART_CLK_ENABLE()   __HAL_RCC_USART1_CLK_ENABLE() /* 与串口号配套的时钟使能 */
+#define UART_BAUDRATE       115200U                       /* 波特率 */
+#define UART_TX_PORT        GPIOA                         /* TX 端口 */
+#define UART_TX_PIN         GPIO_PIN_9                    /* TX 引脚 */
+#define UART_RX_PORT        GPIOA                         /* RX 端口 */
+#define UART_RX_PIN         GPIO_PIN_10                   /* RX 引脚 */
+#define UART_TX_TIMEOUT_MS  100U                          /* 阻塞发送超时 ms */
+#define UART_CH_TIMEOUT_MS  10U                           /* printf 单字符超时 ms */
+#define UART_RX_RING_SIZE   256U                          /* 接收环形缓冲大小（任意值均可） */
+#define UART_IRQ_PRE_PRIO   1U                            /* NVIC 抢占优先级 */
+#define UART_IRQ_SUB_PRIO   3U                            /* NVIC 子优先级 */
+
+UART_HandleTypeDef huart1;
+
+/* ---- 接收链路内部状态（中断与主循环共享，volatile 不可省） ---- */
+static uint8_t  s_rx_byte;                       /* HAL 单字节接收的落脚点 */
+static uint8_t  s_rx_ring[UART_RX_RING_SIZE];    /* 环形缓冲 */
+static volatile uint16_t s_rx_head = 0U;         /* 写指针：中断里前进 */
+static uint16_t s_rx_tail = 0U;                  /* 读指针：主循环前进 */
+static volatile uint8_t  s_frame_flag = 0U;      /* 空闲帧标志 */
+static volatile uint32_t s_rx_over = 0U;         /* 缓冲满丢弃计数 */
+
+/* 初始化：配置收发中断、空闲中断。BRR 由 HAL 按 PCLK2 自动算 */
+void UART1_Init(void)
+{
+    huart1.Instance          = UART_INSTANCE;
+    huart1.Init.BaudRate     = UART_BAUDRATE;
+    huart1.Init.WordLength   = UART_WORDLENGTH_8B;
+    huart1.Init.StopBits     = UART_STOPBITS_1;
+    huart1.Init.Parity       = UART_PARITY_NONE;
+    huart1.Init.Mode         = UART_MODE_TX_RX;
+    huart1.Init.HwFlowCtl    = UART_HWCONTROL_NONE;
+    huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+
+    if (HAL_UART_Init(&huart1) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    else
+    {
+        ; /* 配置成功。 */
+    }
+
+    s_rx_head = 0U;
+    s_rx_tail = 0U;
+    s_frame_flag = 0U;
+    s_rx_over = 0U;
+
+    /* 挂起第一个字节的中断接收，之后在 RxCpltCallback 里逐字节续挂 */
+    if (HAL_UART_Receive_IT(&huart1, &s_rx_byte, 1U) != HAL_OK)
+    {
+        Error_Handler();
+    }
+    else
+    {
+        ; /* 接收链已启动。 */
+    }
+
+    /* 空闲中断：HAL 不管理 IDLE，使能要自己做（IRQHandler 里查清也要自己做） */
+    __HAL_UART_ENABLE_IT(&huart1, UART_IT_IDLE);
+}
+
+/* HAL_UART_Init 自动回调：时钟、引脚、NVIC */
+void HAL_UART_MspInit(UART_HandleTypeDef *huart)
+{
+    GPIO_InitTypeDef gpio = {0};
+
+    if (huart->Instance == UART_INSTANCE)
+    {
+        UART_CLK_ENABLE();
+
+        if (UART_TX_PORT == GPIOA || UART_RX_PORT == GPIOA)
+        {
+            __HAL_RCC_GPIOA_CLK_ENABLE();
+        }
+        else
+        {
+            ; /* 引脚不在 GPIOA。 */
+        }
+        if (UART_TX_PORT == GPIOB || UART_RX_PORT == GPIOB)
+        {
+            __HAL_RCC_GPIOB_CLK_ENABLE();
+        }
+        else
+        {
+            ; /* 引脚不在 GPIOB。 */
+        }
+        if (UART_TX_PORT == GPIOC || UART_RX_PORT == GPIOC)
+        {
+            __HAL_RCC_GPIOC_CLK_ENABLE();
+        }
+        else
+        {
+            ; /* 引脚不在 GPIOC。 */
+        }
+
+        gpio.Pin   = UART_TX_PIN;
+        gpio.Mode  = GPIO_MODE_AF_PP;      /* TX：复用推挽 */
+        gpio.Speed = GPIO_SPEED_FREQ_HIGH;
+        HAL_GPIO_Init(UART_TX_PORT, &gpio);
+
+        gpio.Pin  = UART_RX_PIN;
+        gpio.Mode = GPIO_MODE_INPUT;       /* RX：浮空输入 */
+        gpio.Pull = GPIO_NOPULL;
+        HAL_GPIO_Init(UART_RX_PORT, &gpio);
+
+        HAL_NVIC_SetPriority(UART_IRQn, UART_IRQ_PRE_PRIO, UART_IRQ_SUB_PRIO);
+        HAL_NVIC_EnableIRQ(UART_IRQn);
+    }
+    else
+    {
+        ; /* 其它串口实例不处理。 */
+    }
+}
+
+/* ---- 发送：阻塞版。注意阻塞 Transmit 的 pData 无 const，要强转 ---- */
+void UART1_SendStr(const char *s)
+{
+    uint16_t len = 0U;
+
+    if (s == NULL)
+    {
+        return;
+    }
+    else
+    {
+        while (s[len] != '\0')
+        {
+            len++;
+        }
+        (void)HAL_UART_Transmit(&huart1, (uint8_t *)s, len, UART_TX_TIMEOUT_MS);
+    }
+}
+
+static uint8_t s_txbuf[256];   /* 中断发送缓冲：必须活到回调，禁止传局部变量 */
+
+/* ---- 发送：中断版。拷进静态缓冲再交 HAL；上一次没发完则返回 1 ---- */
+uint8_t UART1_SendStr_IT(const char *s)
+{
+    uint16_t len = 0U;
+    uint8_t ret = 0U;
+
+    if (s == NULL)
+    {
+        ret = 1U;
+    }
+    else
+    {
+        while ((s[len] != '\0') && (len < 255U))
+        {
+            s_txbuf[len] = (uint8_t)s[len];
+            len++;
+        }
+        /* F1 新版 HAL 的 Transmit_IT 形参带 const，这里不用强转 */
+        if (HAL_UART_Transmit_IT(&huart1, s_txbuf, len) != HAL_OK)
+        {
+            ret = 1U;   /* gState=BUSY_TX：上一次还没发完（含阻塞发送占用中） */
+        }
+        else
+        {
+            ; /* 已受理，完成时进 TxCpltCallback。 */
+        }
+    }
+    return ret;
+}
+
+/* ---- printf 重定向（阻塞逐字符） ---- */
+int fputc(int ch, FILE *f)
+{
+    (void)f;
+    (void)HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1U, UART_CH_TIMEOUT_MS);
+    return ch;
+}
+
+/* ---- 中断入口：覆盖启动文件弱符号。stm32f1xx_it.c 里不能再定义一份 ---- */
+void USART1_IRQHandler(void)
+{
+    /* 1. 先让 HAL 处理它管的标志（RXNE：把 DR 里的字节收走） */
+    HAL_UART_IRQHandler(&huart1);
+
+    /* 2. 再查清 IDLE。顺序不能反：清 IDLE 的宏要读 DR，若 HAL 还没收走
+     *    RXNE 的字节，会被这次读 DR "偷走"——丢一个字节还打乱 HAL 状态机 */
+    if (__HAL_UART_GET_FLAG(&huart1, UART_FLAG_IDLE))
+    {
+        __HAL_UART_CLEAR_IDLEFLAG(&huart1);   /* 读 SR+读 DR 序列 */
+        s_frame_flag = 1U;   /* 对面这包发完了；主循环 UART1_FrameReady 取 */
+    }
+    else
+    {
+        ; /* 非 IDLE。 */
+    }
+}
+
+/* ---- 每字节接收完成：入环形缓冲 + 续挂下一字节 ----
+ * 回绕用"先加后绕"写法：next 到底就清 0，不使用 % 运算符 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    uint16_t next;
+
+    if (huart->Instance == UART_INSTANCE)
+    {
+        next = (uint16_t)(s_rx_head + 1U);
+        if (next >= UART_RX_RING_SIZE)
+        {
+            next = 0U;   /* 写指针到底，绕回 0 */
+        }
+        else
+        {
+            ; /* 未到底，正常前进。 */
+        }
+
+        if (next != s_rx_tail)
+        {
+            s_rx_ring[s_rx_head] = s_rx_byte;
+            s_rx_head = next;
+        }
+        else
+        {
+            s_rx_over++;   /* 满了丢字节并计数：主循环消费太慢的信号 */
+        }
+
+        /* 续挂下一字节，保持接收链不断 */
+        if (HAL_UART_Receive_IT(&huart1, &s_rx_byte, 1U) != HAL_OK)
+        {
+            s_rx_over++;   /* 挂不上也是异常，计数留痕 */
+        }
+        else
+        {
+            ; /* 接收链正常。 */
+        }
+    }
+}
+
+/* ---- 接收错误（ORE 溢出/噪声/帧错误）后 HAL 停止续挂，必须手动恢复，
+ *      否则接收链永久停摆。HAL 在这里之前已清过错误标志 ---- */
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == UART_INSTANCE)
+    {
+        if (HAL_UART_Receive_IT(&huart1, &s_rx_byte, 1U) != HAL_OK)
+        {
+            ; /* 状态未就绪的极端情况：留待下次错误或主循环恢复 */
+        }
+        else
+        {
+            ; /* 接收链已恢复。 */
+        }
+    }
+}
+
+/* ---- 中断发送完成的定点：知道"真发完了"的唯一位置，可在此连发下一块 ---- */
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == UART_INSTANCE)
+    {
+        ; /* 例如双缓冲翻转后发起下一块 */
+    }
+}
+
+/* ---- 主循环 API ---- */
+
+/* 取一个字节：0=取到，1=空 */
+uint8_t UART1_ReadRx(uint8_t *byte)
+{
+    uint16_t next;
+    uint8_t ret = 1U;
+
+    if (byte == NULL)
+    {
+        ret = 1U;
+    }
+    else if (s_rx_tail != s_rx_head)
+    {
+        *byte = s_rx_ring[s_rx_tail];
+        next = (uint16_t)(s_rx_tail + 1U);
+        if (next >= UART_RX_RING_SIZE)
+        {
+            next = 0U;   /* 读指针到底，绕回 0 */
+        }
+        else
+        {
+            ; /* 未到底，正常前进。 */
+        }
+        s_rx_tail = next;
+        ret = 0U;
+    }
+    else
+    {
+        ; /* 缓冲空。 */
+    }
+    return ret;
+}
+
+/* 空闲帧标志（读即清）：1=自上次查询后有新的一包进缓冲 */
+uint8_t UART1_FrameReady(void)
+{
+    uint8_t ret = s_frame_flag;
+    s_frame_flag = 0U;
+    return ret;
+}
+
+/* 累计丢弃/异常计数：持续增长说明缓冲不够或主循环太慢 */
+uint32_t UART1_RxOverflow(void)
+{
+    return s_rx_over;
+}
+</script>
+
+<script type="text/plain" id="src-use">
+/* main.c 的 while(1) 里： */
+if (UART1_FrameReady() != 0U)            /* 对面发完一包了 */
+{
+    uint8_t b;
+    while (UART1_ReadRx(&b) == 0U)       /* 整包都在环形缓冲里，逐个消费 */
+    {
+        /* 处理 b：解析协议、执行命令…… */
+    }
+}
+
+/* 心跳测试（跑通收发的第一步）： */
+printf("hello, %u ms\r\n", HAL_GetTick());
+HAL_Delay(500);
+</script>
+
+<script>
+/* ---- 轻量 C 语法高亮：单遍正则替换，无外部依赖 ---- */
+function hlC(src) {
+  var esc = src.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  var re = /(\/\*[\s\S]*?\*\/|\/\/[^\n]*)|("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')|^[ \t]*#[^\n]*|\b(void|static|volatile|const|if|else|while|for|return|typedef|struct|enum|extern|switch|case|break|do|sizeof|unsigned|char|int|uint8_t|uint16_t|uint32_t|NULL)\b|\b(UART_[A-Za-z_]\w*|HAL_[A-Za-z_]\w*|__HAL_[A-Za-z_]\w*|USART1_\w*|GPIO_[A-Z_]\w*|Error_Handler|FILE)\b/gm;
+  return esc.replace(re, function (m, com, str, pp, kw, api) {
+    if (com) return '<span class="c-com">' + m + '</span>';
+    if (str) return '<span class="c-str">' + m + '</span>';
+    if (pp)  return '<span class="c-pp">' + m + '</span>';
+    if (kw)  return '<span class="c-kw">' + m + '</span>';
+    return '<span class="c-api">' + m + '</span>';
+  });
+}
+(function () {
+  var pairs = [['src-h', 'view-h'], ['src-c', 'view-c'], ['src-use', 'view-use']];
+  pairs.forEach(function (p) {
+    var raw = document.getElementById(p[0]).textContent.replace(/^\n/, '').replace(/\s+$/, '');
+    document.getElementById(p[1]).innerHTML = hlC(raw);
+  });
+  /* 复制按钮（clipboard API 不可用时退回 execCommand） */
+  document.querySelectorAll('.copybtn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = document.getElementById(btn.dataset.src).textContent.replace(/^\n/, '').replace(/\s+$/, '');
+      var done = function () {
+        btn.textContent = '已复制 ✓';
+        setTimeout(function () { btn.textContent = '复制代码'; }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, function () { fallback(); });
+      } else {
+        fallback();
+      }
+      function fallback() {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); done(); } catch (e) { /* 忽略 */ }
+        document.body.removeChild(ta);
+      }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

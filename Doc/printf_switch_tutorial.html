@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>printf 总开关教程（ESP32 风格） · TC300PGS</title>
+<style>
+  :root {
+    --bg: #f6f7fa;
+    --card: #ffffff;
+    --text: #2a2d38;
+    --muted: #6b7280;
+    --accent: #185fa5;
+    --accent-soft: #e6f1fb;
+    --border: #e3e6ec;
+    --code-bg: #f6f8fa;
+    --kw: #cf222e;
+    --com: #6e7781;
+    --str: #0a3069;
+    --pp: #8250df;
+    --api: #0550ae;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 32px 24px 64px; }
+  header.hero {
+    background: linear-gradient(135deg, #185fa5 0%, #1e7ac2 100%);
+    color: #fff;
+    border-radius: 14px;
+    padding: 30px 34px;
+    margin-bottom: 28px;
+  }
+  header.hero h1 { margin: 0 0 8px; font-size: 24px; font-weight: 600; letter-spacing: .5px; }
+  header.hero p { margin: 0; opacity: .92; font-size: 13.5px; }
+  header.hero .meta { margin-top: 12px; font-size: 12.5px; opacity: .8; }
+  nav.toc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 22px;
+    margin-bottom: 30px;
+    font-size: 13.5px;
+  }
+  nav.toc b { color: var(--accent); }
+  nav.toc a { color: var(--text); text-decoration: none; margin-right: 14px; white-space: nowrap; }
+  nav.toc a:hover { color: var(--accent); text-decoration: underline; }
+  section.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 26px 30px;
+    margin-bottom: 26px;
+  }
+  h2 {
+    font-size: 19px;
+    color: var(--accent);
+    margin: 0 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--accent-soft);
+    font-weight: 600;
+  }
+  h2 .no { color: #9db8d2; margin-right: 8px; font-weight: 500; }
+  h3 { font-size: 15.5px; margin: 20px 0 8px; color: #1c3d5e; }
+  p { margin: 8px 0; }
+  ul, ol { margin: 8px 0; padding-left: 24px; }
+  li { margin: 5px 0; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 13.5px; }
+  th, td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--accent-soft); color: #0c447c; font-weight: 600; }
+  tr:nth-child(even) td { background: #fafbfc; }
+  code.inline {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+    color: #0f3d66;
+  }
+  .codebox { position: relative; margin: 14px 0; }
+  pre.code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    margin: 0;
+    color: var(--text);
+  }
+  .copybtn {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 3px 10px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .copybtn:hover { color: var(--accent); border-color: var(--accent); }
+  .c-kw { color: var(--kw); font-weight: 500; }
+  .c-com { color: var(--com); font-style: italic; }
+  .c-str { color: var(--str); }
+  .c-pp { color: var(--pp); }
+  .c-api { color: var(--api); }
+  .figure { text-align: center; margin: 18px 0; }
+  .figure svg { max-width: 100%; height: auto; }
+  .note {
+    background: #fff8e6;
+    border-left: 4px solid #d9a300;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 16px;
+    margin: 14px 0;
+    font-size: 13.5px;
+  }
+  .warn {
+    background: #fdecea;
+    border-left: 4px solid #c0392b;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 16px;
+    margin: 14px 0;
+    font-size: 13.5px;
+  }
+  .tip {
+    background: #edf7ed;
+    border-left: 4px solid #2e7d32;
+    border-radius: 0 8px 8px 0;
+    padding: 10px 16px;
+    margin: 14px 0;
+    font-size: 13.5px;
+  }
+  footer { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 30px; }
+  @media print {
+    body { background: #fff; }
+    section.card, nav.toc { border: none; padding: 10px 0; }
+    .copybtn { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>printf 总开关教程（ESP32 风格）</h1>
+  <p>一个宏开关控制全工程日志：开着正常输出，关掉整机静默——代码里的 printf 一个都不用注释、不用删</p>
+  <div class="meta">适用工程：TC300PGS（Keil AC5 · HAL 库）· 整理自 2026-11-19 对话教程 · 三种方法均给出可直接粘贴的代码</div>
+</header>
+
+<nav class="toc">
+  <b>目录：</b>
+  <a href="#s1">1 原理</a>
+  <a href="#s2">2 方法一 fputc 开关</a>
+  <a href="#s3">3 方法二 LOG 宏</a>
+  <a href="#s4">4 方法三 分级日志</a>
+  <a href="#s5">5 开关放哪</a>
+  <a href="#s6">6 坑清单</a>
+  <a href="#s7">7 选型对照</a>
+</nav>
+
+<!-- ================= 1 原理 ================= -->
+<section class="card" id="s1">
+  <h2><span class="no">01</span>原理：裁剪发生在"预处理"阶段</h2>
+  <p>ESP32（ESP-IDF）的 <code class="inline">ESP_LOGI/ESP_LOGE</code> 之所以能"一个开关全静默、代码不用动"，是因为日志调用<b>不是函数调用，而是宏</b>——开关在<b>编译之前的预处理阶段</b>就把代码裁掉了。你的 Keil 工程用同样的机制就能做到一模一样的事。</p>
+  <div class="figure">
+  <svg viewBox="0 0 680 250" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Microsoft YaHei, sans-serif">
+    <title>printf 开关的两态命运</title>
+    <desc>同一行代码，开关开启时编译进固件并输出串口，关闭时在预处理期整行删除</desc>
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round"/>
+      </marker>
+    </defs>
+    <text x="340" y="26" text-anchor="middle" font-size="14" font-weight="600" fill="#1c3d5e">同一行 LOG 代码，开关两态的编译命运</text>
+    <rect x="18" y="62" width="158" height="130" rx="10" fill="#e6f1fb" stroke="#185fa5" stroke-width="1"/>
+    <text x="97" y="88" text-anchor="middle" font-size="12.5" font-weight="600" fill="#0c447c">源码（永远不变）</text>
+    <text x="97" y="114" text-anchor="middle" font-size="11.5" font-family="Consolas, monospace" fill="#2a2d38">LOG("tick=%u",</text>
+    <text x="97" y="130" text-anchor="middle" font-size="11.5" font-family="Consolas, monospace" fill="#2a2d38">&#160;&#160;HAL_GetTick());</text>
+    <text x="97" y="158" text-anchor="middle" font-size="11" fill="#6b7280">写一次，以后永远不用</text>
+    <text x="97" y="174" text-anchor="middle" font-size="11" fill="#6b7280">注释、不删除这行</text>
+    <line x1="176" y1="92" x2="216" y2="70" stroke="#2e7d32" stroke-width="1.5" marker-end="url(#ar)"/>
+    <line x1="176" y1="162" x2="216" y2="184" stroke="#d9a300" stroke-width="1.5" marker-end="url(#ar)"/>
+    <rect x="218" y="40" width="206" height="56" rx="8" fill="#edf7ed" stroke="#2e7d32" stroke-width="1"/>
+    <text x="321" y="62" text-anchor="middle" font-size="12.5" font-weight="600" fill="#2e7d32">开关 = 1</text>
+    <text x="321" y="82" text-anchor="middle" font-size="11.5" fill="#2a2d38">预处理器放行 → 编译进固件</text>
+    <line x1="424" y1="68" x2="456" y2="68" stroke="#2e7d32" stroke-width="1.5" marker-end="url(#ar)"/>
+    <rect x="458" y="40" width="204" height="56" rx="8" fill="#edf7ed" stroke="#2e7d32" stroke-width="1"/>
+    <text x="560" y="62" text-anchor="middle" font-size="12.5" font-weight="600" fill="#2e7d32">运行时正常输出</text>
+    <text x="560" y="82" text-anchor="middle" font-size="11.5" fill="#2a2d38">串口打印 tick=123</text>
+    <rect x="218" y="158" width="206" height="56" rx="8" fill="#fff8e6" stroke="#d9a300" stroke-width="1"/>
+    <text x="321" y="180" text-anchor="middle" font-size="12.5" font-weight="600" fill="#8a6d00">开关 = 0</text>
+    <text x="321" y="200" text-anchor="middle" font-size="11.5" fill="#2a2d38">预处理期整行删除（含参数）</text>
+    <line x1="424" y1="186" x2="456" y2="186" stroke="#d9a300" stroke-width="1.5" marker-end="url(#ar)"/>
+    <rect x="458" y="158" width="204" height="56" rx="8" fill="#fdecea" stroke="#c0392b" stroke-width="1"/>
+    <text x="560" y="180" text-anchor="middle" font-size="12.5" font-weight="600" fill="#c0392b">固件里根本不存在</text>
+    <text x="560" y="200" text-anchor="middle" font-size="11.5" fill="#2a2d38">CPU / ROM 开销 = 0</text>
+    <text x="340" y="238" text-anchor="middle" font-size="12" fill="#6b7280">裁剪发生在"预处理"阶段——比编译还早，所以效果等同注释，却不用碰一行源码</text>
+  </svg>
+  </div>
+  <p>下文三种方法按"离 ESP32 的远近"排列：<b>方法一</b>只堵出口、改动最小；<b>方法二</b>是 ESP32 的真正等价物；<b>方法三</b>是 ESP-IDF 分级日志的完整复刻。</p>
+</section>
+
+<!-- ================= 2 方法一 ================= -->
+<section class="card" id="s2">
+  <h2><span class="no">02</span>方法一：fputc 总开关（程序里写的 printf 一个都不用碰）</h2>
+  <p>Keil（ARMCC）下所有 <code class="inline">printf</code> 最终逐字符经过你重定向的 <code class="inline">fputc</code>——把开关装在这里，<b>全工程任何地方写的 printf 都不用改一个字</b>：开关关掉，printf 照常执行但不再输出。你的 <code class="inline">uart.c</code> 目前还没有 fputc，正好从零加上。</p>
+
+  <h3>① uart.h 里加开关（全工程唯一开关位）</h3>
+  <div class="codebox">
+    <button class="copybtn" data-src="src-ph">复制代码</button>
+    <script type="text/plain" id="src-ph">
+/* ================== printf 总开关 ================== */
+#define PRINTF_ENABLE   1U   /* 1=printf 正常输出到串口；0=整机 printf 静默 */
+</script>
+    <pre class="code" id="view-ph"></pre>
+  </div>
+
+  <h3>② uart.c 里加重定向 + 开关（加在文件末尾即可）</h3>
+  <div class="codebox">
+    <button class="copybtn" data-src="src-fputc">复制代码</button>
+    <script type="text/plain" id="src-fputc">
+/* printf 重定向：ARMCC 的 printf 最终逐字符调 fputc，把它接到串口上。
+ * 开关只动这一个函数——全工程的 printf 调用一个都不用碰。 */
+int fputc(int ch, FILE *f)
+{
+    (void)f;   /* 不关心文件流，压掉未用参数告警 */
+#if (PRINTF_ENABLE != 0)
+    (void)HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1U, UART_TX_TIMEOUT_MS);
+#else
+    ;          /* 静默：不发送。printf 仍会执行格式化（见第 6 节坑 1） */
+#endif
+    return ch;
+}
+</script>
+    <pre class="code" id="view-fputc"></pre>
+  </div>
+
+  <div class="tip">你工程 <code class="inline">uart.c</code> 里已有 <code class="inline">#include &lt;stdio.h&gt;</code>、<code class="inline">huart1</code> 和 <code class="inline">UART_TX_TIMEOUT_MS</code>（100U），这段代码直接粘贴即可编译——单字符超时复用 100U 完全够用。</div>
+  <div class="note">方法一的开关是"堵出口"：printf 的<b>格式化计算照常发生</b>（CPU、栈、字符串常量都还占着），只是结果不出门。调试期临时静音够用；要真·零开销看方法二。</div>
+</section>
+
+<!-- ================= 3 方法二 ================= -->
+<section class="card" id="s3">
+  <h2><span class="no">03</span>方法二：LOG 宏（ESP32 的真正等价物，编译期整行删除）</h2>
+  <p>把日志调用写成宏 <code class="inline">LOG(...)</code> 而不是裸 printf。开关关掉时，<b>整条调用连参数一起在预处理期消失</b>——不占 CPU、不占 ROM，这才是 ESP32 <code class="inline">ESP_LOGx</code> 的完整机制。你的工程还没开始写 printf，<b>从第一天就用 LOG 是最划算的</b>。</p>
+
+  <div class="codebox">
+    <button class="copybtn" data-src="src-log">复制代码</button>
+    <script type="text/plain" id="src-log">
+/* ================== LOG 宏：编译期总开关 ================== */
+#define LOG_ENABLE  1    /* 1=日志开；0=全工程 LOG 整行删除，零开销 */
+
+#if (LOG_ENABLE != 0)
+#define LOG(...)    printf(__VA_ARGS__)
+#else
+#define LOG(...)    ((void)0)   /* 整条调用连参数一起消失 */
+#endif
+
+/* ---- 用法（和 printf 写法完全一样，只是换了名字）---- */
+/* LOG("hello, %u ms\r\n", HAL_GetTick());          */
+/* LOG("rx over=%u\r\n", UART1_RxOverflow());       */
+</script>
+    <pre class="code" id="view-log"></pre>
+  </div>
+
+  <h3>为什么关掉后是 <code class="inline">((void)0)</code> 而不是定义成空？</h3>
+  <ul>
+    <li><code class="inline">LOG("a");</code> 关掉后展开为 <code class="inline">((void)0);</code>——一条合法的空语句，<code class="inline">if (x) LOG("a"); else y();</code> 这种不带花括号的写法也不会语法错误</li>
+    <li>若定义成<b>完全展开为空</b>：<code class="inline">if (x) else y();</code> 直接编译报错</li>
+    <li>若改成"return 前清零"式写法都轮不上——宏展开发生在编译前，<code class="inline">((void)0)</code> 就是让编译器"看见一条无害的空语句"</li>
+  </ul>
+  <div class="warn"><b>副作用警告（ESP32 官方文档同样提示）：</b>开关关掉时，参数表达式<b>不会被执行</b>。<code class="inline">LOG("temp=%d\r\n", ReadTemp());</code> 关闭后 <code class="inline">ReadTemp()</code> 不再被调用！如果某行日志"顺便"触发了你要的副作用（读传感器、翻标志），关日志会改变程序行为——副作用请写在日志外面。</div>
+</section>
+
+<!-- ================= 4 方法三 ================= -->
+<section class="card" id="s4">
+  <h2><span class="no">04</span>方法三：分级日志（ESP-IDF ESP_LOGI/ESP_LOGE 同款）</h2>
+  <p>正式项目长期维护用这套：错误和信息分级，一个数字控制"哪些级别放行"。<code class="inline">LOG_LEVEL</code> 从 0 升到 2，日志逐渐"打开"；将来板上空间紧张就降回 0，全部消失。</p>
+
+  <div class="codebox">
+    <button class="copybtn" data-src="src-lvl">复制代码</button>
+    <script type="text/plain" id="src-lvl">
+/* ================== 分级日志：ESP-IDF ESP_LOG 同款思路 ================== */
+#define LOG_LEVEL   2    /* 0=全关  1=只报错误  2=错误+信息（要调试级再升 3） */
+
+#if (LOG_LEVEL >= 1)
+#define LOG_E(...)  printf("[E] " __VA_ARGS__)   /* 错误：首参必须是字符串字面量 */
+#else
+#define LOG_E(...)  ((void)0)
+#endif
+
+#if (LOG_LEVEL >= 2)
+#define LOG_I(...)  printf("[I] " __VA_ARGS__)   /* 信息：同上 */
+#else
+#define LOG_I(...)  ((void)0)
+#endif
+
+/* ---- 用法 ---- */
+/* LOG_E("rx overflow=%u\r\n", UART1_RxOverflow());   输出 [E] rx overflow=5 */
+/* LOG_I("init ok, baud=%u\r\n", 115200U);            输出 [I] init ok, baud=115200 */
+</script>
+    <pre class="code" id="view-lvl"></pre>
+  </div>
+
+  <p><code class="inline">"[E] "</code> 和后面的格式串靠 <b>C 的字符串字面量自动拼接</b>合成一个字符串——所以 <code class="inline">LOG_E</code> 的第一个参数必须是 <code class="inline">"..."</code> 字面量（和 ESP32 的 <code class="inline">ESP_LOGE(TAG, "...")</code> 同样的限制）。</p>
+</section>
+
+<!-- ================= 5 开关放哪 ================= -->
+<section class="card" id="s5">
+  <h2><span class="no">05</span>开关放哪里 + Keil 里"不改代码"也能关</h2>
+  <p>开关宏必须放在<b>头文件</b>里（<code class="inline">uart.h</code>），因为 main.c 等所有调用方都要看见它。再配一层 <code class="inline">#ifndef</code> 保护，就能在 Keil 的编译选项里覆盖开关——<b>一行源码都不改就能切换开/关</b>，这正是 ESP32 menuconfig 的精神：</p>
+
+  <div class="codebox">
+    <button class="copybtn" data-src="src-keil">复制代码</button>
+    <script type="text/plain" id="src-keil">
+/* uart.h 里写（带保护，允许被编译选项覆盖） */
+#ifndef LOG_ENABLE
+#define LOG_ENABLE  1    /* 默认开；被 Keil Define 覆盖时这里不生效 */
+#endif
+</script>
+    <pre class="code" id="view-keil"></pre>
+  </div>
+
+  <p>Keil 里覆盖：<b>Options for Target → C/C++ → Define 栏</b>，在已有宏后面追加（注意 Keil 用<b>逗号</b>分隔、不带 <code class="inline">-D</code>）：</p>
+  <div class="codebox">
+    <pre class="code">STM32F103xB,USE_HAL_DRIVER,LOG_ENABLE=0</pre>
+  </div>
+  <ul>
+    <li>这样处理后，源码里的默认值让位给编译选项——调试版/发布版可以做成<b>两个 Target</b>（比如 <code class="inline">TC300PGS</code> 开日志、<code class="inline">TC300PGS_Release</code> 关日志），切 Target 就切日志，源码永远不动</li>
+    <li>没有这层 <code class="inline">#ifndef</code> 时，编译选项里的定义会和源码里的 <code class="inline">#define</code> 冲突告警（宏重定义）</li>
+    <li>如果 AC5 在 C90 严格模式下对 <code class="inline">__VA_ARGS__</code> 报错：Options → C/C++ → 把 C 标准选成 <b>C99</b>（或保持默认的 GNU 扩展模式）</li>
+  </ul>
+</section>
+
+<!-- ================= 6 坑清单 ================= -->
+<section class="card" id="s6">
+  <h2><span class="no">06</span>细节与坑清单</h2>
+  <ol>
+    <li><b>方法一关掉 ≠ 零开销</b>：printf 的格式化（解析 %d、%u、除法求余）照常执行，只是结果不出门。程序跑得慢的时候，静音版日志照样吃 CPU——要省，用方法二/三的编译期删除</li>
+    <li><b>编译期删除会删掉参数副作用</b>：<code class="inline">LOG("x=%d", GetX())</code> 关闭后 <code class="inline">GetX()</code> 不执行。需要保证执行的调用写在 LOG 外面，别藏在日志参数里</li>
+    <li><b>别用 <code class="inline">#define LOG(...)</code> 展开为空</b>：<code class="inline">if (x) LOG("a"); else y();</code> 会变成 <code class="inline">if (x) else y();</code> 语法错误。必须展开为 <code class="inline">((void)0)</code></li>
+    <li><b>printf 系列从未接到串口时</b>：没勾 MicroLIB 也没实现 fputc，printf 会走半主机模式（semihosting）卡死或 HardFault——Options → Target → 勾 <b>Use MicroLIB</b> + 本文的 fputc，两件都要有</li>
+    <li><b>LOG_E/LOG_I 首参必须是字面量</b>：<code class="inline">"[E] " __VA_ARGS__</code> 靠字面量拼接，传变量名进去直接编译错误（这是刻意的，防手滑）</li>
+    <li><b>换 GCC 工程时</b>：ARMCC 走 <code class="inline">fputc</code>，GCC（如 STM32CubeIDE）走 <code class="inline">int _write(int fd, char *ptr, int len)</code> 重定向——本教程 Keil AC5 场景不涉及，换工具链时记得换挂点</li>
+  </ol>
+</section>
+
+<!-- ================= 7 选型对照 ================= -->
+<section class="card" id="s7">
+  <h2><span class="no">07</span>三种方法怎么选 + 接入你的工程</h2>
+  <table>
+    <tr><th>对比项</th><th>方法一 fputc 开关</th><th>方法二 LOG 宏</th><th>方法三 分级 LOG</th></tr>
+    <tr><td>已有的 printf 调用</td><td><b>一个都不用改</b></td><td>要把 printf 换名成 LOG</td><td>要换成 LOG_E / LOG_I</td></tr>
+    <tr><td>关闭后的 CPU 开销</td><td>仍有格式化开销</td><td><b>0（整行删除）</b></td><td><b>0（整行删除）</b></td></tr>
+    <tr><td>关闭后的 ROM 占用</td><td>格式化代码仍在</td><td><b>0</b></td><td><b>0</b></td></tr>
+    <tr><td>开关粒度</td><td>全局一个</td><td>全局一个</td><td>按级别（0/1/2…）</td></tr>
+    <tr><td>离 ESP32 的远近</td><td>只是"静音"</td><td>机制完全相同</td><td>机制 + 分级都相同</td></tr>
+    <tr><td>适合</td><td>现成代码、调试期临时静音</td><td>新代码从第一天就用</td><td>正式项目长期维护</td></tr>
+  </table>
+
+  <h3>接入 TC300PGS 的三步</h3>
+  <ol>
+    <li><code class="inline">uart.h</code>：粘贴第 2/3/4 节的开关宏（推荐直接上方法三的分级版，把 <code class="inline">LOG_ENABLE</code> 那段换成带 <code class="inline">#ifndef</code> 的版本）</li>
+    <li><code class="inline">uart.c</code>：粘贴方法一的 <code class="inline">fputc</code>（它是 LOG 打开时的物理出口，两者配合：fputc 挂串口、LOG 管开关）</li>
+    <li><code class="inline">main.c</code>：初始化后试一行 <code class="inline">LOG("hello, %u ms\r\n", HAL_GetTick());</code>，串口助手 115200-8-N-1 看心跳；然后去 Keil 的 Define 里加 <code class="inline">LOG_ENABLE=0</code> 再编译——什么都不改，串口就该安静了</li>
+  </ol>
+  <div class="tip">记住分工：<b>fputc 负责"日志从哪出去"，LOG 宏负责"日志生不出生"</b>。两个开关叠用，就是 ESP32 的完整体验——写代码时随手 LOG，交付前一个宏全静默，一行源码都不用回改。</div>
+</section>
+
+<footer>TC300PGS · printf 总开关教程 · 2026-11-19 整理 · 单文件离线可看</footer>
+</div>
+
+<script>
+/* ---- 轻量 C 语法高亮：单遍正则替换，无外部依赖 ---- */
+function hlC(src) {
+  var esc = src.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  var re = /(\/\*[\s\S]*?\*\/|\/\/[^\n]*)|("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')|^[ \t]*#[^\n]*|\b(void|static|volatile|const|if|else|while|for|return|typedef|struct|enum|extern|switch|case|break|do|sizeof|unsigned|char|int|uint8_t|uint16_t|uint32_t|NULL)\b|\b(LOG|LOG_E|LOG_I|LOG_ENABLE|LOG_LEVEL|PRINTF_ENABLE|__VA_ARGS__|fputc|UART1_SendStr|UART1_RxOverflow|HAL_GetTick|HAL_UART_Transmit|huart1|UART_TX_TIMEOUT_MS|Error_Handler|FILE|printf)\b/gm;
+  return esc.replace(re, function (m, com, str, pp, kw, api) {
+    if (com) return '<span class="c-com">' + m + '</span>';
+    if (str) return '<span class="c-str">' + m + '</span>';
+    if (pp)  return '<span class="c-pp">' + m + '</span>';
+    if (kw)  return '<span class="c-kw">' + m + '</span>';
+    return '<span class="c-api">' + m + '</span>';
+  });
+}
+(function () {
+  var pairs = [['src-ph', 'view-ph'], ['src-fputc', 'view-fputc'], ['src-log', 'view-log'], ['src-lvl', 'view-lvl'], ['src-keil', 'view-keil']];
+  pairs.forEach(function (p) {
+    var raw = document.getElementById(p[0]).textContent.replace(/^\n/, '').replace(/\s+$/, '');
+    document.getElementById(p[1]).innerHTML = hlC(raw);
+  });
+  /* 复制按钮（clipboard API 不可用时退回 execCommand） */
+  document.querySelectorAll('.copybtn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var text = document.getElementById(btn.dataset.src).textContent.replace(/^\n/, '').replace(/\s+$/, '');
+      var done = function () {
+        btn.textContent = '已复制 ✓';
+        setTimeout(function () { btn.textContent = '复制代码'; }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done);
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        done();
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>
