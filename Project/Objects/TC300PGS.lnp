@@ -7,6 +7,9 @@
 ".\objects\stm32f1xx_hal_rcc.o"
 ".\objects\stm32f1xx_hal_uart.o"
 ".\objects\stm32f1xx_hal_dma.o"
+".\objects\stm32f1xx_hal_adc.o"
+".\objects\stm32f1xx_hal_adc_ex.o"
+".\objects\stm32f1xx_hal_rcc_ex.o"
 ".\objects\stm32f1xx_hal_iwdg.o"
 ".\objects\stm32f1xx_hal_i2c.o"
 ".\objects\stm32f1xx_hal_tim.o"
@@ -17,6 +20,9 @@
 ".\objects\soft_i2c.o"
 ".\objects\hw_i2c.o"
 ".\objects\tick.o"
+".\objects\uart.o"
+".\objects\hw_dma.o"
+".\objects\hw_adc.o"
 --strict --scatter ".\Objects\TC300PGS.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers
